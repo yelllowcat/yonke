@@ -1,0 +1,67 @@
+---
+import "@fontsource-variable/atkinson-hyperlegible-next";
+import "@fontsource-variable/archivo-narrow";
+import "@/styles/global.css";
+import BrandMark from "@/components/BrandMark.astro";
+import type { BusinessContact, Locale } from "@/lib/types";
+
+interface Props {
+  title: string;
+  description: string;
+  locale: Locale;
+  contact: BusinessContact;
+}
+
+const { title, description, locale, contact } = Astro.props;
+const isSpanish = locale === "es";
+const alternatePath = isSpanish ? "/en/" : "/";
+---
+
+<!doctype html>
+<html lang={locale}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f4c542" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">{isSpanish ? "Saltar al contenido" : "Skip to content"}</a>
+    <header class="site-header">
+      <a class="brand" href={isSpanish ? "/" : "/en/"} aria-label={contact.name}>
+        <BrandMark />
+        <span>
+          <strong>{contact.name}</strong>
+          <small>{contact.city}</small>
+        </span>
+      </a>
+      <div class="header-context" aria-label={isSpanish ? "Información del yonke" : "Yard information"}>
+        <span>{isSpanish ? "Inventario visible" : "Live inventory"}</span>
+        <small>{contact.hours[locale]}</small>
+      </div>
+      <nav aria-label={isSpanish ? "Idioma y contacto" : "Language and contact"}>
+        <a class="language-link" href={alternatePath} lang={isSpanish ? "en" : "es"}>
+          {isSpanish ? "EN" : "ES"}
+        </a>
+        <a class="header-call" href={`tel:+${contact.phoneE164}`}>
+          {isSpanish ? "Llamar" : "Call"}
+        </a>
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+    <footer>
+      <div>
+        <strong>{contact.name}</strong>
+        <span>{contact.city}</span>
+      </div>
+      <div>
+        <span>{contact.hours[locale]}</span>
+        <a href={`tel:+${contact.phoneE164}`}>{contact.phoneDisplay}</a>
+      </div>
+    </footer>
+  </body>
+</html>

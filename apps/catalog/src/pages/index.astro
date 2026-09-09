@@ -1,0 +1,35 @@
+---
+import CatalogExplorer from "@/components/CatalogExplorer";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCatalog } from "@/lib/catalog";
+
+const payload = await getCatalog();
+---
+
+<BaseLayout
+  title={`Piezas disponibles | ${payload.contact.name}`}
+  description="Busque autopartes disponibles por vehículo y pregunte directamente por WhatsApp."
+  locale="es"
+  contact={payload.contact}
+>
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="hero-overline">
+        <p class="eyebrow">Inventario actualizado</p>
+        <span class="hero-location">{payload.contact.city}</span>
+      </div>
+      <h1>Encuentre la pieza.<br /><span>Nosotros la ubicamos.</span></h1>
+      <p>Busque por nombre, año, marca o modelo. Confirme disponibilidad directamente con el yonke.</p>
+      <div class="hero-proof" aria-label="Información de atención">
+        <span><strong>{payload.items.length}</strong> piezas visibles</span>
+        <span>{payload.contact.hours.es}</span>
+      </div>
+    </div>
+    <div class="yard-tag" aria-hidden="true">
+      <span>PIEZA</span>
+      <strong>LISTA</strong>
+      <small>PARA RECOGER</small>
+    </div>
+  </section>
+  <CatalogExplorer client:idle items={payload.items} locale="es" contact={payload.contact} />
+</BaseLayout>

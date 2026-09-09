@@ -1,0 +1,60 @@
+---
+import type { BusinessContact, Locale, PublicPart } from "@/lib/types";
+import { phoneHref, whatsappHref } from "@/lib/catalog";
+
+interface Props {
+  part: PublicPart;
+  locale: Locale;
+  contact: BusinessContact;
+}
+
+const { part, locale, contact } = Astro.props;
+const es = locale === "es";
+const vehicle = `${part.vehicle.year} ${part.vehicle.make} ${part.vehicle.model}`;
+const message = es
+  ? `Hola, pregunto por ${part.name.es} ${vehicle}, referencia ${part.reference}. ¿Sigue disponible?`
+  : `Hello, I'm asking about ${part.name.en} for a ${vehicle}, reference ${part.reference}. Is it still available?`;
+---
+
+<nav class="breadcrumb" aria-label={es ? "Ruta" : "Breadcrumb"}>
+  <a href={es ? "/" : "/en/"}>{es ? "Inventario" : "Inventory"}</a>
+  <span aria-hidden="true">/</span>
+  <span>{part.reference}</span>
+</nav>
+
+<article class="detail">
+  <div class="detail-media">
+    {part.photoUrl ? (
+      <img src={part.photoUrl} alt={`${part.name[locale]} · ${vehicle}`} />
+    ) : (
+      <div class="detail-placeholder">
+        <svg viewBox="0 0 180 110" aria-hidden="true">
+          <path d="M24 70h132l-13-35H46L24 70Zm10 0v18m111-18v18M56 35l13-15h46l14 15" />
+          <circle cx="53" cy="72" r="11" /><circle cx="128" cy="72" r="11" />
+        </svg>
+        <span>{es ? "Foto pendiente" : "Photo pending"}</span>
+      </div>
+    )}
+  </div>
+  <div class="detail-copy">
+    <div class="detail-tag">{part.reference}</div>
+    <p class="eyebrow">{part.category[locale]}</p>
+    <h1>{part.name[locale]}</h1>
+    <p class="detail-vehicle">{vehicle}</p>
+    <dl>
+      <div><dt>{es ? "Estado" : "Condition"}</dt><dd>{part.condition[locale]}</dd></div>
+      <div><dt>{es ? "Precio" : "Price"}</dt><dd>{part.priceMxn == null ? (es ? "Preguntar" : "Ask us") : `$${part.priceMxn.toLocaleString(es ? "es-MX" : "en-US")} MXN`}</dd></div>
+      <div><dt>{es ? "Disponibilidad" : "Availability"}</dt><dd>{es ? "Disponible hoy" : "Available today"}</dd></div>
+    </dl>
+    <p class="detail-note">{es
+      ? "Confirme que la pieza sea compatible antes de visitar el yonke."
+      : "Please confirm the part is compatible before visiting the yard."}</p>
+    <div class="detail-actions">
+      <a class="button button-primary" href={whatsappHref(contact.whatsappE164, message)} target="_blank" rel="noreferrer">
+        {es ? "Preguntar por WhatsApp" : "Ask on WhatsApp"}
+      </a>
+      <a class="button button-quiet" href={phoneHref(contact.phoneE164)}>{es ? "Llamar" : "Call"} {contact.phoneDisplay}</a>
+    </div>
+  </div>
+</article>
+

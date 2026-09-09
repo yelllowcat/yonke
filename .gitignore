@@ -1,0 +1,22 @@
+node_modules/
+.astro/
+dist/
+.env
+.env.*
+!.env.example
+.DS_Store
+output/
+
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+*.iml
+.idea/
+
+# Supabase local runtime
+supabase/.branches/
+supabase/.temp/
+
+# Tool artifacts
+.playwright-cli/

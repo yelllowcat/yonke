@@ -1,0 +1,19 @@
+---
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import PartDetail from "@/components/PartDetail.astro";
+import { getPart } from "@/lib/catalog";
+
+const id = Astro.params.id ?? "";
+const { payload, part } = await getPart(id);
+if (!part) return Astro.redirect("/?missing=1");
+---
+
+<BaseLayout
+  title={`${part.name.es} · ${part.vehicle.year} ${part.vehicle.make} ${part.vehicle.model}`}
+  description={`${part.name.es} disponible. Referencia ${part.reference}.`}
+  locale="es"
+  contact={payload.contact}
+>
+  <PartDetail part={part} locale="es" contact={payload.contact} />
+</BaseLayout>
+

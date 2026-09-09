@@ -1,0 +1,35 @@
+---
+import CatalogExplorer from "@/components/CatalogExplorer";
+import BaseLayout from "@/layouts/BaseLayout.astro";
+import { getCatalog } from "@/lib/catalog";
+
+const payload = await getCatalog();
+---
+
+<BaseLayout
+  title={`Available parts | ${payload.contact.name}`}
+  description="Search available used auto parts by vehicle and ask directly through WhatsApp."
+  locale="en"
+  contact={payload.contact}
+>
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="hero-overline">
+        <p class="eyebrow">Current inventory</p>
+        <span class="hero-location">{payload.contact.city}</span>
+      </div>
+      <h1>Find the part.<br /><span>We'll locate it.</span></h1>
+      <p>Search by part, year, make, or model. Confirm availability directly with the yard.</p>
+      <div class="hero-proof" aria-label="Service information">
+        <span><strong>{payload.items.length}</strong> visible parts</span>
+        <span>{payload.contact.hours.en}</span>
+      </div>
+    </div>
+    <div class="yard-tag" aria-hidden="true">
+      <span>PART</span>
+      <strong>READY</strong>
+      <small>FOR PICKUP</small>
+    </div>
+  </section>
+  <CatalogExplorer client:idle items={payload.items} locale="en" contact={payload.contact} />
+</BaseLayout>
