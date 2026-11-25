@@ -1,5 +1,5 @@
 <resources>
-    <color name="navy">#17324D</color>
-    <color name="yellow">#F4C542</color>
+    <color name="primary_orange">#A33700</color>
+    <color name="surface_warm">#FAF9F6</color>
+    <color name="surface_lowest">#FFFFFF</color>
 </resources>
-

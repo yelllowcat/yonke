@@ -1,0 +1,43 @@
+name: yonke_mobile
+description: "Yonke Fácil — App móvil en Flutter con sistema de diseño Stitch y navegación WidgetsApp + Navigator."
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.13.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
+  fonts:
+    - family: Archivo
+      fonts:
+        - asset: assets/fonts/archivo_600.ttf
+          weight: 600
+        - asset: assets/fonts/archivo_700.ttf
+          weight: 700
+        - asset: assets/fonts/archivo_800.ttf
+          weight: 800
+    - family: Commissioner
+      fonts:
+        - asset: assets/fonts/commissioner_500.ttf
+          weight: 500
+        - asset: assets/fonts/commissioner_600.ttf
+          weight: 600
+        - asset: assets/fonts/commissioner_700.ttf
+          weight: 700
+    - family: SourceCodePro
+      fonts:
+        - asset: assets/fonts/source_code_pro_600.ttf
+          weight: 600
+        - asset: assets/fonts/source_code_pro_700.ttf
+          weight: 700
