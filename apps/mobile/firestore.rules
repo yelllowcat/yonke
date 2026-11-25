@@ -1,0 +1,23 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Reglas iniciales para desarrollo en Yonke Fácil.
+    // Antes de producción, integra Firebase Auth (anónimo o custom token por dispositivo)
+    // y restringe escritura a dispositivos enlazados.
+    match /staff/{docId} {
+      allow read, write: if true;
+    }
+    match /vehicles/{docId} {
+      allow read, write: if true;
+    }
+    match /parts/{docId} {
+      allow read, write: if true;
+    }
+    match /devices/{docId} {
+      allow read, write: if true;
+    }
+    match /enrollment_codes/{docId} {
+      allow read, write: if true;
+    }
+  }
+}

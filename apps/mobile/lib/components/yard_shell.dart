@@ -9,6 +9,7 @@ import '../screens/team_owner_screen.dart';
 import '../theme/stitch_icons.dart';
 import '../theme/stitch_theme.dart';
 import 'custom_button.dart';
+import 'part_photo.dart';
 
 enum YardTab { home, inventory, sales, team }
 
@@ -53,7 +54,11 @@ class YardScaffold extends StatelessWidget {
       child: SafeArea(
         child: Column(
           children: [
-            YardTopBar(title: title, subtitle: shiftText),
+            YardTopBar(
+              title: title,
+              subtitle: shiftText,
+              syncLabel: store.syncBadgeLabel,
+            ),
             Expanded(child: body),
             BottomYardNavBar(
               currentTab: currentTab,
@@ -75,10 +80,12 @@ class YardTopBar extends StatelessWidget {
     super.key,
     required this.title,
     required this.subtitle,
+    this.syncLabel = 'Al día',
   });
 
   final String title;
   final String subtitle;
+  final String syncLabel;
 
   @override
   Widget build(BuildContext context) {
@@ -128,8 +135,8 @@ class YardTopBar extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          const StatusBadge(
-            text: 'Al día',
+          StatusBadge(
+            text: syncLabel,
             backgroundColor: StitchColors.successContainer,
             textColor: StitchColors.onSuccessContainer,
             borderColor: StitchColors.success,
@@ -547,23 +554,15 @@ class PartActionCard extends StatelessWidget {
                 Container(
                   width: 88,
                   height: 88,
-                  alignment: Alignment.center,
+                  clipBehavior: Clip.hardEdge,
                   decoration: BoxDecoration(
                     color: StitchColors.surfaceContainer,
                     borderRadius: BorderRadius.circular(StitchRadius.sm),
                     border: Border.all(color: StitchColors.outlineVariant, width: 1),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        StitchIcons.build,
-                        size: 28,
-                        color: StitchColors.outline,
-                      ),
-                      const SizedBox(height: 4),
-                      Text(part.reference, style: StitchText.monoMd),
-                    ],
+                  child: PartPhotoWidget(
+                    photoPath: part.primaryPhoto,
+                    fallbackReference: part.reference,
                   ),
                 ),
                 const SizedBox(width: 12),

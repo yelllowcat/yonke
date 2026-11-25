@@ -30,11 +30,12 @@ class _TeamOwnerScreenState extends State<TeamOwnerScreen> {
     super.dispose();
   }
 
-  void _addStaff() {
-    final ok = widget.store.addStaffMember(
+  Future<void> _addStaff() async {
+    final ok = await widget.store.addStaffMember(
       _nameController.text,
       _pinController.text.trim(),
     );
+    if (!mounted) return;
     if (!ok) {
       setState(() => _formError = 'Escribe un nombre y un PIN de 4 números.');
       return;

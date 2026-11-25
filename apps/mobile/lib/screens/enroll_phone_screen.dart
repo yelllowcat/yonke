@@ -30,11 +30,12 @@ class _EnrollPhoneScreenState extends State<EnrollPhoneScreen> {
     super.dispose();
   }
 
-  void _enroll() {
-    final ok = widget.store.enrollPhone(
+  Future<void> _enroll() async {
+    final ok = await widget.store.enrollPhone(
       _codeController.text,
       _nameController.text,
     );
+    if (!mounted) return;
     if (!ok) {
       setState(() {
         _error = 'Escribe un código válido de 6 dígitos y un nombre para el teléfono.';

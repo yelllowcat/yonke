@@ -1,29 +1,58 @@
 import 'package:flutter/widgets.dart';
 import '../components/custom_button.dart';
+import '../components/part_photo.dart';
 import '../components/yard_shell.dart';
 import '../data/yonke_store.dart';
 import '../navigation/app_navigator.dart';
+import '../services/photo_capture_service.dart';
 import '../theme/stitch_icons.dart';
 import '../theme/stitch_theme.dart';
 
 /// Screen 4: Detalle y Venta Rápida (Stitch 04_detalle_venta.html)
-/// Pushed via `AppNavigator.push` and returns via `AppNavigator.pop(context)`.
+/// Displays real part photo, captures additional photos via camera/gallery,
+/// and executes atomic sale in Firestore before `Navigator.pop(context)`.
 class PartDetailScreen extends StatefulWidget {
   const PartDetailScreen({
     super.key,
     required this.store,
     required this.partId,
+    this.captureService,
   });
 
   final YonkeStore store;
   final String partId;
+  final PhotoCaptureService? captureService;
 
   @override
   State<PartDetailScreen> createState() => _PartDetailScreenState();
 }
 
 class _PartDetailScreenState extends State<PartDetailScreen> {
+  late final PhotoCaptureService _captureService;
   PaymentMethod _payment = PaymentMethod.cash;
+  bool _busy = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _captureService = widget.captureService ?? PhotoCaptureService();
+  }
+
+  Future<void> _addPhoto(String partId) async {
+    final path = await _captureService.captureOrPick();
+    if (path == null || path.isEmpty || !mounted) return;
+    setState(() => _busy = true);
+    await widget.store.attachPartPhoto(partId, path);
+    if (mounted) setState(() => _busy = false);
+  }
+
+  Future<void> _confirmSale(String partId) async {
+    if (_busy) return;
+    setState(() => _busy = true);
+    await widget.store.sellPart(partId, _payment);
+    if (!mounted) return;
+    AppNavigator.pop(context);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -102,6 +131,7 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
                       AspectRatio(
                         aspectRatio: 4 / 3,
                         child: Container(
+                          clipBehavior: Clip.hardEdge,
                           decoration: BoxDecoration(
                             color: StitchColors.surfaceContainer,
                             borderRadius: BorderRadius.circular(StitchRadius.card),
@@ -111,30 +141,20 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
                             ),
                           ),
                           child: Stack(
+                            fit: StackFit.expand,
                             children: [
-                              Center(
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      StitchIcons.build,
-                                      size: 48,
-                                      color: StitchColors.outline,
-                                    ),
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      '${part.reference} · ${part.photoCount} foto(s)',
-                                      style: StitchText.monoMd,
-                                    ),
-                                  ],
-                                ),
+                              PartPhotoWidget(
+                                photoPath: part.primaryPhoto,
+                                fallbackReference:
+                                    '${part.reference} · ${part.photoCount} foto(s)',
+                                iconSize: 48,
                               ),
                               Positioned(
                                 right: 12,
                                 bottom: 12,
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
-                                  onTap: () => widget.store.incrementPartPhoto(part.id),
+                                  onTap: _busy ? null : () => _addPhoto(part.id),
                                   child: Container(
                                     constraints: const BoxConstraints(minHeight: 44),
                                     padding: const EdgeInsets.symmetric(
@@ -143,7 +163,9 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
                                     ),
                                     decoration: BoxDecoration(
                                       color: StitchColors.surfaceContainerLowest,
-                                      borderRadius: BorderRadius.circular(StitchRadius.md),
+                                      borderRadius: BorderRadius.circular(
+                                        StitchRadius.md,
+                                      ),
                                       border: Border.all(
                                         color: StitchColors.outline,
                                         width: 2,
@@ -264,7 +286,8 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
                                       child: _PaymentChip(
                                         label: entry.$2,
                                         selected: _payment == entry.$1,
-                                        onTap: () => setState(() => _payment = entry.$1),
+                                        onTap: () =>
+                                            setState(() => _payment = entry.$1),
                                       ),
                                     ),
                                   ],
@@ -289,15 +312,15 @@ class _PartDetailScreenState extends State<PartDetailScreen> {
                   ),
                   child: !isSold
                       ? CustomButton(
-                          text: part.priceMxn != null
-                              ? 'Confirmar venta · $priceText'
-                              : 'Confirmar venta',
+                          text: _busy
+                              ? 'Registrando venta...'
+                              : part.priceMxn != null
+                                  ? 'Confirmar venta · $priceText'
+                                  : 'Confirmar venta',
                           icon: StitchIcons.pointOfSale,
                           minHeight: 56,
-                          onTap: () {
-                            widget.store.sellPart(part.id, _payment);
-                            AppNavigator.pop(context);
-                          },
+                          enabled: !_busy,
+                          onTap: () => _confirmSale(part.id),
                         )
                       : isOwner
                           ? CustomButton(

@@ -1,6 +1,19 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yonke_mobile/data/yonke_store.dart';
 import 'package:yonke_mobile/main.dart';
+import 'package:yonke_mobile/screens/camera_intake_screen.dart';
+import 'package:yonke_mobile/services/photo_capture_service.dart';
+
+class _FakePhotoCaptureService extends PhotoCaptureService {
+  int _counter = 0;
+
+  @override
+  Future<String?> captureOrPick() async {
+    _counter++;
+    return '/tmp/captured_part_$_counter.jpg';
+  }
+}
 
 void main() {
   Future<void> enterPin(WidgetTester tester, String pin) async {
@@ -95,5 +108,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('¿Quién entra al turno?'), findsOneWidget);
+  });
+
+  testWidgets('CameraIntakeScreen captures photos and saves part with photoPaths to store', (tester) async {
+    tester.view.physicalSize = const Size(430, 932);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+
+    final store = YonkeStore();
+    final initialCount = store.parts.length;
+
+    await tester.pumpWidget(
+      WidgetsApp(
+        color: const Color(0xFFA33700),
+        pageRouteBuilder: <T>(RouteSettings settings, WidgetBuilder builder) =>
+            PageRouteBuilder<T>(
+              settings: settings,
+              pageBuilder: (ctx, _, _) => builder(ctx),
+            ),
+        home: CameraIntakeScreen(
+          store: store,
+          captureService: _FakePhotoCaptureService(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('0 / 4 fotos'), findsOneWidget);
+
+    final takePhotoBtn = find.text('Tomar foto');
+    await tester.ensureVisible(takePhotoBtn);
+    await tester.tap(takePhotoBtn);
+    await tester.pumpAndSettle();
+
+    expect(find.text('1 / 4 fotos'), findsOneWidget);
+
+    final saveBtn = find.text('Guardar (1)');
+    await tester.ensureVisible(saveBtn);
+    await tester.tap(saveBtn);
+    await tester.pumpAndSettle();
+
+    expect(store.parts.length, initialCount + 1);
+    expect(store.parts.first.photoPaths, ['/tmp/captured_part_1.jpg']);
   });
 }

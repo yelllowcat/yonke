@@ -1,11 +1,35 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/widgets.dart';
+import 'data/firebase_repository.dart';
 import 'data/yonke_store.dart';
+import 'firebase_options.dart';
 import 'navigation/app_navigator.dart';
 import 'screens/login_screen.dart';
 import 'theme/stitch_theme.dart';
 
-void main() {
-  runApp(YonkeFacilApp());
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  FirebaseYonkeRepository? firebaseRepo;
+  if (DefaultFirebaseOptions.isConfigured) {
+    try {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+      firebaseRepo = FirebaseYonkeRepository();
+    } catch (_) {
+      firebaseRepo = null;
+    }
+  } else {
+    // Also support native google-services.json / GoogleService-Info.plist if dropped in.
+    try {
+      await Firebase.initializeApp();
+      firebaseRepo = FirebaseYonkeRepository();
+    } catch (_) {
+      firebaseRepo = null;
+    }
+  }
+
+  runApp(YonkeFacilApp(store: YonkeStore(firebaseRepository: firebaseRepo)));
 }
 
 /// Root app following the exact pure `WidgetsApp` + `PageRouteBuilder`
